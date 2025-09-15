@@ -24,13 +24,13 @@ function Footer() {
 
       {/* Right: Social icons */}
       <div className='flex justify-center sm:justify-end gap-2 sm:gap-2.5 order-2 sm:order-3'>
-        <button className='border border-gray-300 hover:border-gray-400 rounded-full p-1.5 sm:p-2 transition-colors'>
+        <button className=' border-gray-300 hover:border-gray-400 rounded-full p-1.5 sm:p-2 transition-colors'>
           <img src={assets.facebook_icon} alt="Facebook" className='w-6 h-6 sm:w-8 sm:h-8' />
         </button>
-        <button className='border border-gray-300 hover:border-gray-400 rounded-full p-1.5 sm:p-2 transition-colors'>
+        <button className=' hover:border-gray-400 rounded-full p-1.5 sm:p-2 transition-colors'>
           <img src={assets.instagram_icon} alt="Instagram" className='w-6 h-6 sm:w-8 sm:h-8' />
         </button>
-        <button className='border border-gray-300 hover:border-gray-400 rounded-full p-1.5 sm:p-2 transition-colors'>
+        <button className=' border-gray-300 hover:border-gray-400 rounded-full p-1.5 sm:p-2 transition-colors'>
           <img src={assets.twitter_icon} alt="Twitter" className='w-6 h-6 sm:w-8 sm:h-8' />
         </button>
       </div>
