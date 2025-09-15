@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Firebase Debug Test</title>
+</head>
+<body>
+    <h1>Firebase Configuration Debug</h1>
+    <div id="debug-info"></div>
+    
+    <script type="module">
+        // Check if environment variables are being loaded
+        const envVars = {
+            VITE_FIREBASE_API_KEY: import.meta.env.VITE_FIREBASE_API_KEY,
+            VITE_FIREBASE_AUTH_DOMAIN: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+            VITE_FIREBASE_PROJECT_ID: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+            VITE_FIREBASE_STORAGE_BUCKET: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+            VITE_FIREBASE_MESSAGING_SENDER_ID: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+            VITE_FIREBASE_APP_ID: import.meta.env.VITE_FIREBASE_APP_ID,
+            VITE_FIREBASE_MEASUREMENT_ID: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
+        };
+        
+        console.log('🔍 Environment Variables:', envVars);
+        
+        const debugDiv = document.getElementById('debug-info');
+        debugDiv.innerHTML = `
+            <h2>Environment Variables Check:</h2>
+            <pre>${JSON.stringify(envVars, null, 2)}</pre>
+            
+            <h2>Status:</h2>
+            <ul>
+                ${Object.entries(envVars).map(([key, value]) => 
+                    `<li>${key}: ${value ? '✅ Set' : '❌ Missing'}</li>`
+                ).join('')}
+            </ul>
+        `;
+        
+        // Try to initialize Firebase
+        try {
+            const { initializeApp } = await import("firebase/app");
+            const { getAuth, GoogleAuthProvider } = await import("firebase/auth");
+            
+            const firebaseConfig = {
+                apiKey: envVars.VITE_FIREBASE_API_KEY,
+                authDomain: envVars.VITE_FIREBASE_AUTH_DOMAIN,
+                projectId: envVars.VITE_FIREBASE_PROJECT_ID,
+                storageBucket: envVars.VITE_FIREBASE_STORAGE_BUCKET,
+                messagingSenderId: envVars.VITE_FIREBASE_MESSAGING_SENDER_ID,
+                appId: envVars.VITE_FIREBASE_APP_ID,
+                measurementId: envVars.VITE_FIREBASE_MEASUREMENT_ID
+            };
+            
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            const googleProvider = new GoogleAuthProvider();
+            
+            debugDiv.innerHTML += `
+                <h2>Firebase Initialization:</h2>
+                <p>✅ Firebase app initialized successfully</p>
+                <p>✅ Auth object created: ${auth ? 'Yes' : 'No'}</p>
+                <p>✅ Google provider created: ${googleProvider ? 'Yes' : 'No'}</p>
+                <p>Project ID: ${firebaseConfig.projectId}</p>
+                <p>Auth Domain: ${firebaseConfig.authDomain}</p>
+            `;
+            
+        } catch (error) {
+            console.error('❌ Firebase initialization failed:', error);
+            debugDiv.innerHTML += `
+                <h2>Firebase Initialization:</h2>
+                <p>❌ Failed to initialize Firebase</p>
+                <p>Error: ${error.message}</p>
+            `;
+        }
+    </script>
+</body>
+</html>

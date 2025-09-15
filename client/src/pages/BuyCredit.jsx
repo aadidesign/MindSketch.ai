@@ -146,14 +146,25 @@ function BuyCredit() {
           currency: data.currency
         });
 
-        // Initialize Razorpay payment
+        // Initialize Razorpay payment with multiple payment methods
         const options = {
           key: razorpayKeyId,
           amount: data.amount,
           currency: data.currency,
-          name: 'MindSketch',
-          description: `${data.planId} Credits - ${data.credits} credits`,
+          name: 'MindSketch AI',
+          description: `${data.planId} Plan - ${data.credits} credits`,
           order_id: data.orderId,
+          
+          // Enable all payment methods for maximum convenience
+          method: {
+            netbanking: true,
+            card: true,
+            upi: true,
+            wallet: true,
+            emi: true,
+            paylater: true
+          },
+          
           handler: async function (response) {
             try {
               console.log('💳 Payment completed:', response);
@@ -201,23 +212,37 @@ function BuyCredit() {
               setPurchaseLoading(false);
             }
           },
+          
+          // Pre-fill user information
           prefill: {
             name: user?.name || '',
             email: user?.email || '',
             contact: user?.phone || ''
           },
+          
+          // Additional notes
           notes: {
-            address: 'MindSketch Office'
+            address: 'MindSketch AI Office',
+            merchant_order_id: data.orderId,
+            plan_type: data.planId,
+            credits: data.credits.toString()
           },
+          
+          // Theme
           theme: {
-            color: "#3399cc"
+            color: "#2563eb"
           },
+          
+          // Modal configuration
           modal: {
             ondismiss: function() {
-              console.log('💳 Payment modal dismissed');
+              console.log('💳 Payment modal dismissed by user');
               setPurchaseLoading(false);
             }
-          }
+          },
+          
+          // Timeout configuration (30 minutes)
+          timeout: 1800
         };
 
         console.log('💳 Initializing Razorpay with options:', {
@@ -225,12 +250,50 @@ function BuyCredit() {
           key: razorpayKeyId.substring(0, 10) + '...' // Don't log full key
         });
 
+        // Debug payment methods availability
+        console.log('🔍 Payment methods enabled:', {
+          netbanking: options.method.netbanking,
+          card: options.method.card,
+          upi: options.method.upi,
+          wallet: options.method.wallet,
+          currency: options.currency,
+          amount: options.amount
+        });
+
         const rzp = new window.Razorpay(options);
         
+        // Enhanced payment failure handling
         rzp.on('payment.failed', function (response) {
           console.error('❌ Payment failed:', response.error);
           setPurchaseLoading(false);
-          alert('Payment failed: ' + response.error.description);
+          
+          let errorMessage = 'Payment failed. Please try again.';
+          
+          // Provide specific error messages based on failure reason
+          if (response.error.code) {
+            switch (response.error.code) {
+              case 'BAD_REQUEST_ERROR':
+                errorMessage = 'Invalid payment details. Please check and try again.';
+                break;
+              case 'GATEWAY_ERROR':
+                errorMessage = 'Payment gateway error. Please try a different payment method.';
+                break;
+              case 'NETWORK_ERROR':
+                errorMessage = 'Network error. Please check your connection and try again.';
+                break;
+              case 'SERVER_ERROR':
+                errorMessage = 'Server error. Please try again in a few moments.';
+                break;
+              case 'VALIDATION_ERROR':
+                errorMessage = 'Payment validation failed. Please verify your details.';
+                break;
+              default:
+                errorMessage = response.error.description || 'Payment failed. Please try again.';
+            }
+          }
+          
+          // Show user-friendly error message
+          alert(`💳 ${errorMessage}\n\n💡 Try using:\n• UPI (Google Pay, PhonePe)\n• Debit/Credit Cards\n• Net Banking\n• Digital Wallets`);
         });
 
         rzp.open();
@@ -298,49 +361,50 @@ function BuyCredit() {
         viewport={{ once: true }}
         className="min-h-[80vh] text-center pt-14 mb-10"
       >
-        <button className="border border-gray-400 px-10 py-2 rounded-full mb-6">
-          Our Plans
-        </button>
-        <h1 className="text-center text-3xl font-medium mb-6 sm:mb-10">
+        <motion.div className='text-stone-500 inline-flex text-center gap-2 bg-white px-6 py-1 rounded-full border border-neutral-500 mb-6' 
+            initial={{opacity:0, y:-20}} animate={{opacity:1, y:0}} transition={{delay:0.2, duration:0.8}}>
+                <p>Our Plans</p>
+            </motion.div>
+        <h1 className="text-center text-4xl font-bold mb-8 text-gray-900">
           Choose the Plan
         </h1>
 
-        
-
         {billingInfo && billingInfo.needsCredits && (
-          <div className="mb-6 p-4 bg-red-100 text-red-700 rounded-lg max-w-md mx-auto">
+          <div className="mb-10 p-4 bg-red-100 text-red-700 rounded-lg max-w-md mx-auto">
             You have no credits left. Please purchase a plan to continue generating images.
           </div>
         )}
 
         {billingInfo && billingInfo.lowCredits && !billingInfo.needsCredits && (
-          <div className="mb-6 p-4 bg-yellow-100 text-yellow-700 rounded-lg max-w-md mx-auto">
+          <div className="mb-10 p-4 bg-yellow-100 text-yellow-700 rounded-lg max-w-md mx-auto">
             You're running low on credits. Consider purchasing more to avoid interruptions.
           </div>
         )}
 
-        <div className="flex flex-wrap justify-center gap-6 text-left">
+        <div className="flex justify-center gap-8 max-w-6xl mx-auto px-4">
           {billingInfo?.availablePlans ? 
             Object.values(billingInfo.availablePlans).map((plan, index) => (
               <div 
                 key={index} 
-                className={`bg-white drop-shadow-sm border rounded-lg py-12 px-8 text-gray-600 hover:scale-105 transition-all duration-500 relative ${plan.popular ? 'ring-2 ring-blue-500' : ''}`}
+                className={`bg-white rounded-xl py-10 px-8 text-gray-600 hover:scale-105 transition-all duration-500 relative shadow-lg border w-80 text-left ${
+                  plan.popular ? 'border-blue-500' : 'border-gray-200'
+                }`}
               >
                 {plan.popular && (
-                  <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-xs absolute -top-2 left-1/2 transform -translate-x-1/2">
+                  <span className="bg-blue-500 text-white px-4 py-1 rounded-full text-xs absolute -top-3 left-1/2 transform -translate-x-1/2 font-medium">
                     Most Popular
                   </span>
                 )}
-                <img width={40} src={assets.logo_icon} alt="" />
-                <p className="mt-3 mb-1 font-semibold">{plan.id}</p>
-                <p className="text-sm">{plan.description}</p>
-                <p className="mt-6">
-                  <span className="text-3xl font-medium">₹{plan.price}</span> / {plan.credits} credits
+                <img width={40} src={assets.logo_icon} alt="" className="mb-6" />
+                <h3 className="text-xl font-bold text-gray-900 mb-2 text-left">{plan.id}</h3>
+                <p className="text-gray-500 mb-6 text-left">{plan.description}</p>
+                <p className="mb-8 text-left">
+                  <span className="text-3xl font-bold text-gray-900">${plan.price}</span> <span className="text-gray-500">/ {plan.credits} credits</span>
                 </p>
                 <button 
                   onClick={() => purchase(plan.id)} 
                   disabled={purchaseLoading}
-                  className={`w-full mt-8 text-sm rounded-md py-2.5 min-w-52 transition-all ${
+                  className={`w-full text-sm rounded-lg py-3 font-semibold transition-all ${
                     purchaseLoading 
                       ? 'bg-gray-400 text-gray-200 cursor-not-allowed' 
                       : 'bg-gray-800 text-white hover:bg-gray-700'
@@ -352,24 +416,34 @@ function BuyCredit() {
                       Processing...
                     </span>
                   ) : (
-                    user ? 'Purchase' : 'Get Started'
+                    'Purchase'
                   )}
                 </button>
               </div>
             ))
             :
             plans.map((item, index) => (
-              <div key={index} className="bg-white drop-shadow-sm border rounded-lg py-12 px-8 text-gray-600 hover:scale-105 transition-all duration-500">
-                <img width={40} src={assets.logo_icon} alt="" />
-                <p className="mt-3 mb-1 font-semibold">{item.id}</p>
-                <p className="text-sm">{item.desc}</p>
-                <p className="mt-6">
-                  <span className="text-3xl font-medium">₹{item.price}</span> / {item.credits} credits
+              <div 
+                key={index} 
+                className={`bg-white rounded-xl py-10 px-8 text-gray-600 hover:scale-105 transition-all duration-500 relative shadow-lg border w-80 text-left ${
+                  item.popular ? 'border-blue-500' : 'border-gray-200'
+                }`}
+              >
+                {item.popular && (
+                  <span className="bg-blue-500 text-white px-4 py-1 rounded-full text-xs absolute -top-3 left-1/2 transform -translate-x-1/2 font-medium">
+                    Most Popular
+                  </span>
+                )}
+                <img width={40} src={assets.logo_icon} alt="" className="mb-6" />
+                <h3 className="text-xl font-bold text-gray-900 mb-2 text-left">{item.id}</h3>
+                <p className="text-gray-500 mb-6 text-left">{item.desc}</p>
+                <p className="mb-8 text-left">
+                  <span className="text-3xl font-bold text-gray-900">${item.price}</span> <span className="text-gray-500">/ {item.credits} credits</span>
                 </p>
                 <button 
                   onClick={() => purchase(item.id)} 
                   disabled={purchaseLoading}
-                  className={`w-full mt-8 text-sm rounded-md py-2.5 min-w-52 transition-all ${
+                  className={`w-full text-sm rounded-lg py-3 font-semibold transition-all ${
                     purchaseLoading 
                       ? 'bg-gray-400 text-gray-200 cursor-not-allowed' 
                       : 'bg-gray-800 text-white hover:bg-gray-700'
@@ -381,7 +455,7 @@ function BuyCredit() {
                       Processing...
                     </span>
                   ) : (
-                    user ? 'Purchase' : 'Get Started'
+                    'Purchase'
                   )}
                 </button>
               </div>

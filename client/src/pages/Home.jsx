@@ -14,7 +14,6 @@ function Home() {
       <Description/>
       <Testimonials/>
       <GenerateBtn/>
-      <Footer/>
     </div>
   )
 }

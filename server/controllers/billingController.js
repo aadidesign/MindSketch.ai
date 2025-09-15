@@ -19,10 +19,9 @@ const razorpay = new Razorpay({
 
 // Server-side source of truth for plans to prevent client tampering
 const PLANS = {
-  Basic: { pricePaise: 100000, credits: 100, currency: 'INR', name: 'Basic' }, // ₹1000
-  Advanced: { pricePaise: 500000, credits: 500, currency: 'INR', name: 'Advanced' }, // ₹5000
-  Business: { pricePaise: 2500000, credits: 5000, currency: 'INR', name: 'Business' } // ₹25000
-
+  Basic: { pricePaise: 1200, credits: 100, currency: 'USD', name: 'Basic' }, // $12
+  Advanced: { pricePaise: 6000, credits: 500, currency: 'USD', name: 'Advanced' }, // $60
+  Business: { pricePaise: 30000, credits: 5000, currency: 'USD', name: 'Business' } // $300
 };
 
 export const createCheckoutSession = async (req, res) => {
@@ -37,9 +36,8 @@ export const createCheckoutSession = async (req, res) => {
 
 
     const options = {
-      amount: plan.pricePaise, // amount in paise
       currency: plan.currency,
-      receipt: `receipt_${Date.now()}`,
+      receipt: `receipt_${userId}_${Date.now()}`,
       notes: {
         userId: userId,
         planId: planId,

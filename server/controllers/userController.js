@@ -1,11 +1,11 @@
 // Updated userController.js with better error handling and debugging
 
 import userModel from '../models/userModel.js';
-import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import dotenv from 'dotenv';
+import { verifyFirebaseToken } from '../config/firebase.js';
 
 dotenv.config();
 
@@ -15,6 +15,15 @@ console.log('Key ID exists:', !!process.env.RAZORPAY_KEY_ID);
 console.log('Key Secret exists:', !!process.env.RAZORPAY_KEY_SECRET);
 console.log('Key ID preview:', process.env.RAZORPAY_KEY_ID ? process.env.RAZORPAY_KEY_ID.substring(0, 10) + '...' : 'NOT SET');
 
+// Check if in live mode or test mode
+const isLiveMode = process.env.RAZORPAY_KEY_ID?.startsWith('rzp_live_');
+console.log('🚀 Razorpay Mode:', isLiveMode ? '🔴 LIVE MODE' : '🧪 TEST MODE');
+if (isLiveMode) {
+    console.log('⚠️  LIVE MODE ACTIVE - Real payments will be processed!');
+} else {
+    console.log('💡 TEST MODE - Use test cards for payments');
+}
+
 // Initialize Razorpay with error handling
 let razorpay;
 try {
@@ -22,11 +31,27 @@ try {
         console.error('❌ RAZORPAY KEYS ARE MISSING!');
         console.error('Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in your .env file');
     } else {
-        razorpay = new Razorpay({
-            key_id: process.env.RAZORPAY_KEY_ID,
-            key_secret: process.env.RAZORPAY_KEY_SECRET,
-        });
-        console.log('✅ Razorpay initialized successfully');
+        // Validate key format
+        const keyId = process.env.RAZORPAY_KEY_ID;
+        if (!keyId.startsWith('rzp_test_') && !keyId.startsWith('rzp_live_')) {
+            console.error('❌ Invalid Razorpay Key ID format!');
+            console.error('Key should start with rzp_test_ or rzp_live_');
+        } else {
+            razorpay = new Razorpay({
+                key_id: process.env.RAZORPAY_KEY_ID,
+                key_secret: process.env.RAZORPAY_KEY_SECRET,
+            });
+            console.log('✅ Razorpay initialized successfully');
+            
+            // Live mode warnings
+            if (isLiveMode) {
+                console.log('🔔 LIVE MODE REMINDERS:');
+                console.log('   - Real money will be charged');
+                console.log('   - Ensure KYC is approved');
+                console.log('   - Monitor transactions closely');
+                console.log('   - Have customer support ready');
+            }
+        }
     }
 } catch (error) {
     console.error('❌ Razorpay initialization failed:', error);
@@ -36,132 +61,107 @@ try {
 const PLANS = {
     Basic: { 
         id: 'Basic',
-        price: 1000, // in rupees
-        pricePaise: 100000, // in paise (1000 * 100)
+        price: 12, // in USD
+        pricePaise: 1200, // in cents (12 * 100)
         credits: 100, 
-        currency: 'INR', 
+        currency: 'USD', 
         description: 'Best for personal use.',
         popular: false
     },
     Advanced: { 
         id: 'Advanced',
-        price: 5000,
-        pricePaise: 500000, // in paise (5000 * 100)
+        price: 60,
+        pricePaise: 6000, // in cents (60 * 100)
         credits: 500, 
-        currency: 'INR', 
+        currency: 'USD', 
         description: 'Best for business use.',
         popular: true
     },
     Business: { 
         id: 'Business',
-        price: 25000,
-        pricePaise: 2500000, // in paise (25000 * 100)
+        price: 300,
+        pricePaise: 30000, // in cents (300 * 100)
         credits: 5000, 
-        currency: 'INR', 
+        currency: 'USD', 
         description: 'Best for enterprise use.',
         popular: false
     }
 };
 
-const registerUser = async (req, res) => {
-    try {
-        const { name, email, password } = req.body;
-        
-        console.log('📝 Registration attempt:', { name, email, passwordLength: password?.length });
-        
-        if (!name || !email || !password) {
-            return res.json({
-                success: false, 
-                message: 'Please fill all the fields'
-            });
-        }
 
-        // Check if user already exists
-        const existingUser = await userModel.findOne({ email });
-        if (existingUser) {
+
+// Firebase Authentication Handler
+const firebaseAuth = async (req, res) => {
+    try {
+        const { firebaseToken, email, name, photoURL } = req.body;
+        
+        console.log('🔥 Firebase auth attempt for:', email);
+        
+        if (!firebaseToken) {
             return res.json({
                 success: false,
-                message: 'User already exists with this email'
+                message: 'Firebase token is required'
             });
         }
-
-        const salt = await bcrypt.genSalt(10);
-        const hashPassword = await bcrypt.hash(password, salt);
-
-        const userData = {
-            name,
-            email,
-            password: hashPassword,
-            creditBalance: 5 // Give 5 free credits to new users
-        };
-
-        const newUser = new userModel(userData);
-        const user = await newUser.save();
-
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-
-        console.log('✅ User registered successfully:', user.email);
-
+        
+        // Verify Firebase token
+        const decodedToken = await verifyFirebaseToken(firebaseToken);
+        
+        if (!decodedToken) {
+            return res.json({
+                success: false,
+                message: 'Invalid Firebase token'
+            });
+        }
+        
+        // Check if user exists
+        let user = await userModel.findOne({ email: decodedToken.email });
+        
+        if (!user) {
+            // Create new user
+            const userData = {
+                name: name || decodedToken.name || decodedToken.email.split('@')[0],
+                email: decodedToken.email,
+                firebaseUid: decodedToken.uid,
+                photoURL: photoURL || decodedToken.picture,
+                creditBalance: 5, // Give 5 free credits to new users
+                authProvider: 'firebase'
+            };
+            
+            const newUser = new userModel(userData);
+            user = await newUser.save();
+            
+            console.log('✅ New Firebase user created:', user.email);
+        } else {
+            // Update existing user with Firebase info if needed
+            if (!user.firebaseUid) {
+                user.firebaseUid = decodedToken.uid;
+                user.authProvider = 'firebase';
+                await user.save();
+            }
+            console.log('✅ Existing user logged in:', user.email);
+        }
+        
+        // Generate JWT token for our app
+        const appToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+        
         res.json({
-            success: true, 
-            token, 
-            user: { 
+            success: true,
+            token: appToken,
+            user: {
                 name: user.name,
                 email: user.email,
-                id: user._id
+                id: user._id,
+                photoURL: user.photoURL
             }
         });
-    } catch (error) {
-        console.error('❌ Registration error:', error);
-        res.json({ success: false, message: error.message });
-    }
-};
-
-const loginUser = async (req, res) => {
-    try {
-        const { email, password } = req.body;
         
-        console.log('🔐 Login attempt:', { email });
-        
-        if (!email || !password) {
-            return res.json({
-                success: false,
-                message: 'Please provide email and password'
-            });
-        }
-
-        const user = await userModel.findOne({ email });
-
-        if (!user) {
-            return res.json({
-                success: false, 
-                message: 'User does not exist'
-            });
-        }
-
-        const isMatch = await bcrypt.compare(password, user.password);
-
-        if (isMatch) {
-            const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-            console.log('✅ Login successful:', user.email);
-            return res.json({
-                success: true, 
-                token, 
-                user: { 
-                    name: user.name,
-                    email: user.email,
-                    id: user._id
-                }
-            });
-        } else {
-            return res.json({
-                success: false, 
-                message: 'Invalid credentials'
-            });
-        }
     } catch (error) {
-        console.error('❌ Login error:', error);
-        res.json({ success: false, message: error.message });
+        console.error('❌ Firebase auth error:', error);
+        res.json({ 
+            success: false, 
+            message: 'Firebase authentication failed: ' + error.message 
+        });
     }
 };
 
@@ -257,11 +257,16 @@ export const createOrder = async (req, res) => {
             });
         }
 
+        // Create a short, unique receipt ID (max 40 chars)
+        const timestamp = Date.now().toString();
+        const shortUserId = userId.toString().slice(-8); // Last 8 chars of user ID
+        const receipt = `rcpt_${shortUserId}_${timestamp.slice(-10)}`; // Max ~25 chars
+        
         // Create Razorpay order
         const options = {
-            amount: plan.pricePaise, // amount in paise
+            amount: plan.pricePaise, // amount in smallest currency unit (cents for USD)
             currency: plan.currency,
-            receipt: `receipt_${userId}`,
+            receipt: receipt,
             notes: {
                 userId: userId,
                 planId: planId,
@@ -271,6 +276,7 @@ export const createOrder = async (req, res) => {
         };
 
         console.log('📦 Creating Razorpay order with options:', options);
+        console.log('📋 Receipt ID length:', receipt.length, '- Receipt:', receipt);
 
         const order = await razorpay.orders.create(options);
         
@@ -417,6 +423,7 @@ export const verifyPayment = async (req, res) => {
     }
 };
 
+
 // Legacy Stripe webhook (keep for backward compatibility if needed)
 export const stripeWebhook = async (req, res) => {
     try {
@@ -433,4 +440,4 @@ export const stripeWebhook = async (req, res) => {
     }
 };
 
-export { registerUser, loginUser, userCredits };
+export { userCredits, firebaseAuth };

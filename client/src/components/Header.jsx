@@ -40,19 +40,55 @@ const Header = () => {
             transition={{delay:0.6, duration:0.8}}>
             Unleash your creativity with AI. Turn your imagination into visual art in seconds - just type, and watch the magic happen.</motion.p>
 
-            <motion.button onClick={onClickHandler} className='sm:text-lg text-white bg-black w-auto mt-8 px-12 py-2.5 flex items-center gap-2 rounded-full'
-            whileTap={{scale:1.05}}
-            whileHover={{scale: 0.95}}
-            initial={{opacity:0}}
-            animate={{opacity:1}}
-            transition={{default:{duration:0.5}, opacity:{delay:0.8, duration:1}}}>
-            Generate Images <img className='h-6' src={assets.star_group} alt="" /></motion.button>
+            <motion.button onClick={onClickHandler} className='sm:text-lg text-white bg-black w-auto mt-12 mb-12 px-12 py-2.5 flex items-center justify-center gap-2 rounded-full mx-auto shadow-lg hover:shadow-xl'
+            whileTap={{scale:0.95}}
+            whileHover={{
+                scale: 1.05,
+                backgroundColor: "#1f2937",
+                boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)"
+            }}
+            initial={{opacity:0, y:20}}
+            animate={{
+                opacity:1, 
+                y:0,
+                boxShadow: [
+                    "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                    "0 10px 15px -3px rgb(0 0 0 / 0.1)",
+                    "0 4px 6px -1px rgb(0 0 0 / 0.1)"
+                ]
+            }}
+            transition={{
+                default:{duration:0.3}, 
+                opacity:{delay:0.8, duration:1},
+                boxShadow: {
+                    duration: 2,
+                    repeat: Infinity,
+                    repeatType: "reverse"
+                }
+            }}>
+            Generate Images 
+            <motion.img 
+                className='h-6' 
+                src={assets.star_group} 
+                alt=""
+                animate={{
+                    rotate: [0, 5, -5, 0],
+                    scale: [1, 1.1, 1]
+                }}
+                transition={{
+                    duration: 1.5,
+                    repeat: Infinity,
+                    repeatType: "reverse",
+                    delay: 1
+                }}
+            />
+            </motion.button>
 
             <motion.div
             initial={{opacity:0}}
             animate={{opacity:1}}
             transition={{delay:1, duration:1}}
-            className='flex flex-wrap justify-center mt-16 gap-3'>
+            className='flex flex-wrap justify-center gap-3'>
                 {Array(6).fill('').map((item, index) => (                                 // map function to create an array of 6 items and show 6 images
                     <motion.img 
                     whileHover={{scale:1.05, duration:0.1}}

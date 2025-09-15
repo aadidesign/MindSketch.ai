@@ -14,10 +14,20 @@ const userSchema = new mongoose.Schema({
         lowercase: true,
         trim: true
     },
-    password: {
+    firebaseUid: {
         type: String,
-        required: true,
-        minlength: 6
+        required: false,
+        unique: true,
+        sparse: true // Allows null values but ensures uniqueness when present
+    },
+    photoURL: {
+        type: String,
+        required: false
+    },
+    authProvider: {
+        type: String,
+        enum: ['local', 'firebase', 'google'],
+        default: 'local'
     },
     creditBalance: {
         type: Number,

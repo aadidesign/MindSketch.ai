@@ -15,19 +15,20 @@ const App = () => {
   const { showLogin } = useContext(AppContext);
 
   return (
-    <div className='px-4 sm:px-10 md:px1-4 lg:px-28 min-h-screen bg-gradient-to-b from-teal-50 to-orange-50'>
+    <div className='min-h-screen'>
       
       <ToastContainer position='bottom-right' />
       
-      <Navbar />
-      {showLogin && <Login/>}
-      <Routes>
-      <Route path='/' element={<Home/>}/>
-      <Route path='/result' element={<Result/>}/>
-      <Route path='/buy' element={<BuyCredit/>}/> 
-      </Routes>
-
-      <Footer/>
+      <div className='px-4 sm:px-10 md:px1-4 lg:px-28 min-h-screen bg-gradient-to-b from-teal-50 to-orange-50'>
+        <Navbar />
+        {showLogin && <Login/>}
+        <Routes>
+          <Route path='/' element={<Home/>}/>
+          <Route path='/result' element={<Result/>}/>
+          <Route path='/buy' element={<BuyCredit/>}/>
+        </Routes>
+        <Footer/>
+      </div>
     </div>
   )
 }

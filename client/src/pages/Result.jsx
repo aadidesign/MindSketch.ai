@@ -11,6 +11,7 @@ function Result() {
   const [loading, setLoading] = useState(false)
   const [input, setInput] = useState('')
 
+  
   const {generateImage} = useContext(AppContext)
 
   const onDownload = async () => {
