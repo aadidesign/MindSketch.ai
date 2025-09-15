@@ -38,9 +38,8 @@ export const createCheckoutSession = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid plan selected' });
     }
 
-
     // Razorpay expects amount in the smallest currency unit
-    const amountPaise = plan.pricePaise ?? plan.amountPaise ?? plan.amount || 0;
+    const amountPaise = plan.pricePaise || 0;
     if (!amountPaise) {
       return res.status(400).json({ success: false, message: 'Invalid plan price configuration' });
     }
@@ -74,7 +73,6 @@ export const createCheckoutSession = async (req, res) => {
   }
 };
 
-0
 export const verifyPayment = async (req, res) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
@@ -114,6 +112,3 @@ export const verifyPayment = async (req, res) => {
 };
 
 export default { createCheckoutSession, verifyPayment };
-
-
-
