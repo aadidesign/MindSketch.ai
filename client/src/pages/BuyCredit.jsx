@@ -365,46 +365,46 @@ function BuyCredit() {
             initial={{opacity:0, y:-20}} animate={{opacity:1, y:0}} transition={{delay:0.2, duration:0.8}}>
                 <p>Our Plans</p>
             </motion.div>
-        <h1 className="text-center text-4xl font-bold mb-8 text-gray-900">
+        <h1 className="text-center text-2xl sm:text-3xl md:text-4xl font-bold mb-6 sm:mb-8 text-gray-900 px-4">
           Choose the Plan
         </h1>
 
         {billingInfo && billingInfo.needsCredits && (
-          <div className="mb-10 p-4 bg-red-100 text-red-700 rounded-lg max-w-md mx-auto">
+          <div className="mb-6 sm:mb-10 p-3 sm:p-4 bg-red-100 text-red-700 rounded-lg max-w-md mx-auto text-sm sm:text-base">
             You have no credits left. Please purchase a plan to continue generating images.
           </div>
         )}
 
         {billingInfo && billingInfo.lowCredits && !billingInfo.needsCredits && (
-          <div className="mb-10 p-4 bg-yellow-100 text-yellow-700 rounded-lg max-w-md mx-auto">
+          <div className="mb-6 sm:mb-10 p-3 sm:p-4 bg-yellow-100 text-yellow-700 rounded-lg max-w-md mx-auto text-sm sm:text-base">
             You're running low on credits. Consider purchasing more to avoid interruptions.
           </div>
         )}
 
-        <div className="flex justify-center gap-8 max-w-6xl mx-auto px-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 max-w-6xl mx-auto px-4">
           {billingInfo?.availablePlans ? 
             Object.values(billingInfo.availablePlans).map((plan, index) => (
               <div 
                 key={index} 
-                className={`bg-white rounded-xl py-10 px-8 text-gray-600 hover:scale-105 transition-all duration-500 relative shadow-lg border w-80 text-left ${
+                className={`bg-white rounded-xl py-6 sm:py-8 lg:py-10 px-4 sm:px-6 lg:px-8 text-gray-600 hover:scale-105 transition-all duration-500 relative shadow-lg border w-full max-w-sm mx-auto text-left ${
                   plan.popular ? 'border-blue-500' : 'border-gray-200'
                 }`}
               >
                 {plan.popular && (
-                  <span className="bg-blue-500 text-white px-4 py-1 rounded-full text-xs absolute -top-3 left-1/2 transform -translate-x-1/2 font-medium">
+                  <span className="bg-blue-500 text-white px-3 sm:px-4 py-1 rounded-full text-xs absolute -top-3 left-1/2 transform -translate-x-1/2 font-medium">
                     Most Popular
                   </span>
                 )}
-                <img width={40} src={assets.logo_icon} alt="" className="mb-6" />
-                <h3 className="text-xl font-bold text-gray-900 mb-2 text-left">{plan.id}</h3>
-                <p className="text-gray-500 mb-6 text-left">{plan.description}</p>
-                <p className="mb-8 text-left">
-                  <span className="text-3xl font-bold text-gray-900">${plan.price}</span> <span className="text-gray-500">/ {plan.credits} credits</span>
+                <img className="w-8 h-8 sm:w-10 sm:h-10 mb-4 sm:mb-6" src={assets.logo_icon} alt="" />
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 text-left">{plan.id}</h3>
+                <p className="text-sm sm:text-base text-gray-500 mb-4 sm:mb-6 text-left">{plan.description}</p>
+                <p className="mb-6 sm:mb-8 text-left">
+                  <span className="text-2xl sm:text-3xl font-bold text-gray-900">${plan.price}</span> <span className="text-sm sm:text-base text-gray-500">/ {plan.credits} credits</span>
                 </p>
                 <button 
                   onClick={() => purchase(plan.id)} 
                   disabled={purchaseLoading}
-                  className={`w-full text-sm rounded-lg py-3 font-semibold transition-all ${
+                  className={`w-full text-sm sm:text-base rounded-lg py-2.5 sm:py-3 font-semibold transition-all ${
                     purchaseLoading 
                       ? 'bg-gray-400 text-gray-200 cursor-not-allowed' 
                       : 'bg-gray-800 text-white hover:bg-gray-700'
@@ -425,25 +425,25 @@ function BuyCredit() {
             plans.map((item, index) => (
               <div 
                 key={index} 
-                className={`bg-white rounded-xl py-10 px-8 text-gray-600 hover:scale-105 transition-all duration-500 relative shadow-lg border w-80 text-left ${
+                className={`bg-white rounded-xl py-6 sm:py-8 lg:py-10 px-4 sm:px-6 lg:px-8 text-gray-600 hover:scale-105 transition-all duration-500 relative shadow-lg border w-full max-w-sm mx-auto text-left ${
                   item.popular ? 'border-blue-500' : 'border-gray-200'
                 }`}
               >
                 {item.popular && (
-                  <span className="bg-blue-500 text-white px-4 py-1 rounded-full text-xs absolute -top-3 left-1/2 transform -translate-x-1/2 font-medium">
+                  <span className="bg-blue-500 text-white px-3 sm:px-4 py-1 rounded-full text-xs absolute -top-3 left-1/2 transform -translate-x-1/2 font-medium">
                     Most Popular
                   </span>
                 )}
-                <img width={40} src={assets.logo_icon} alt="" className="mb-6" />
-                <h3 className="text-xl font-bold text-gray-900 mb-2 text-left">{item.id}</h3>
-                <p className="text-gray-500 mb-6 text-left">{item.desc}</p>
-                <p className="mb-8 text-left">
-                  <span className="text-3xl font-bold text-gray-900">${item.price}</span> <span className="text-gray-500">/ {item.credits} credits</span>
+                <img className="w-8 h-8 sm:w-10 sm:h-10 mb-4 sm:mb-6" src={assets.logo_icon} alt="" />
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 text-left">{item.id}</h3>
+                <p className="text-sm sm:text-base text-gray-500 mb-4 sm:mb-6 text-left">{item.desc}</p>
+                <p className="mb-6 sm:mb-8 text-left">
+                  <span className="text-2xl sm:text-3xl font-bold text-gray-900">${item.price}</span> <span className="text-sm sm:text-base text-gray-500">/ {item.credits} credits</span>
                 </p>
                 <button 
                   onClick={() => purchase(item.id)} 
                   disabled={purchaseLoading}
-                  className={`w-full text-sm rounded-lg py-3 font-semibold transition-all ${
+                  className={`w-full text-sm sm:text-base rounded-lg py-2.5 sm:py-3 font-semibold transition-all ${
                     purchaseLoading 
                       ? 'bg-gray-400 text-gray-200 cursor-not-allowed' 
                       : 'bg-gray-800 text-white hover:bg-gray-700'
@@ -491,18 +491,18 @@ function BuyCredit() {
                 stiffness: 100,
                 damping: 15
               }}
-              className="bg-white/95 backdrop-blur-lg rounded-3xl p-12 max-w-2xl w-full text-center shadow-2xl border border-white/20"
+              className="bg-white/95 backdrop-blur-lg rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-12 max-w-2xl w-full text-center shadow-2xl border border-white/20"
             >
               {/* Success Icon */}
               <motion.div
                 initial={{ scale: 0, y: 50 }}
                 animate={{ scale: 1, y: 0 }}
                 transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-                className="relative mb-8"
+                className="relative mb-6 sm:mb-8"
               >
-                <div className="w-32 h-32 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mx-auto">
+                <div className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mx-auto">
                   <svg
-                    className="w-16 h-16 text-white"
+                    className="w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 text-white"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -522,7 +522,7 @@ function BuyCredit() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.8, duration: 0.5 }}
-                className="text-5xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-4"
+                className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-3 sm:mb-4"
               >
                 Payment Successful! 🎉
               </motion.h1>
@@ -532,16 +532,16 @@ function BuyCredit() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1.2 }}
-                className="text-xl text-gray-700 mb-8"
+                className="text-base sm:text-lg md:text-xl text-gray-700 mb-6 sm:mb-8"
               >
                 {paymentDetails && (
                   <>
-                    <span className="font-bold text-2xl text-green-600">
+                    <span className="font-bold text-xl sm:text-2xl text-green-600">
                       {paymentDetails.credits} credits
                     </span>{" "}
                     have been successfully added to your account!
                     <br />
-                    <span className="text-sm text-gray-600">
+                    <span className="text-xs sm:text-sm text-gray-600">
                       New balance: {paymentDetails.newBalance} credits
                     </span>
                   </>
@@ -554,21 +554,21 @@ function BuyCredit() {
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 1.4 }}
-                  className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl p-6 mb-8 border border-gray-200"
+                  className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 border border-gray-200"
                 >
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-left">
+                    <div className="flex items-center space-x-2 sm:space-x-3">
+                      <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-500 rounded-full flex-shrink-0"></div>
                       <div>
-                        <p className="text-sm text-gray-600">Plan</p>
-                        <p className="font-semibold text-gray-800">{paymentDetails.planId}</p>
+                        <p className="text-xs sm:text-sm text-gray-600">Plan</p>
+                        <p className="font-semibold text-sm sm:text-base text-gray-800">{paymentDetails.planId}</p>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-3">
-                      <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                    <div className="flex items-center space-x-2 sm:space-x-3">
+                      <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-blue-500 rounded-full flex-shrink-0"></div>
                       <div>
-                        <p className="text-sm text-gray-600">Payment ID</p>
-                        <p className="font-semibold text-gray-800 text-sm">{paymentDetails.paymentId}</p>
+                        <p className="text-xs sm:text-sm text-gray-600">Payment ID</p>
+                        <p className="font-semibold text-xs sm:text-sm text-gray-800 break-all">{paymentDetails.paymentId}</p>
                       </div>
                     </div>
                   </div>
@@ -580,18 +580,18 @@ function BuyCredit() {
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1.6 }}
-                className="space-y-4"
+                className="space-y-3 sm:space-y-4"
               >
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
                   <button
                     onClick={handleSuccessRedirect}
-                    className="px-8 py-3 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-lg font-semibold hover:from-green-600 hover:to-blue-600 transition-all duration-300"
+                    className="px-6 sm:px-8 py-2.5 sm:py-3 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-lg font-semibold hover:from-green-600 hover:to-blue-600 transition-all duration-300 text-sm sm:text-base"
                   >
                     Start Creating
                   </button>
                   <button
                     onClick={handleStayHere}
-                    className="px-8 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:border-gray-400 transition-all duration-300"
+                    className="px-6 sm:px-8 py-2.5 sm:py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:border-gray-400 transition-all duration-300 text-sm sm:text-base"
                   >
                     Buy More Credits
                   </button>

@@ -8,14 +8,18 @@ console.log('Razorpay Key ID loaded:', process.env.RAZORPAY_KEY_ID ? 'YES' : 'NO
 console.log('Razorpay Key Secret loaded:', process.env.RAZORPAY_KEY_SECRET ? 'YES' : 'NO');
 console.log('Environment variables available:', Object.keys(process.env).filter(key => key.includes('RAZORPAY')));
 
-if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
-  console.error('ERROR: RAZORPAY keys are not set!');
-}
-
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
+// Lazy initialize Razorpay so the server can boot even if keys are absent
+let razorpay = null;
+const getRazorpay = () => {
+  if (razorpay) return razorpay;
+  const keyId = process.env.RAZORPAY_KEY_ID;
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+  if (!keyId || !keySecret) {
+    throw new Error('Razorpay keys missing. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET');
+  }
+  razorpay = new Razorpay({ key_id: keyId, key_secret: keySecret });
+  return razorpay;
+};
 
 // Server-side source of truth for plans to prevent client tampering
 const PLANS = {
@@ -35,17 +39,25 @@ export const createCheckoutSession = async (req, res) => {
     }
 
 
+    // Razorpay expects amount in the smallest currency unit
+    const amountPaise = plan.pricePaise ?? plan.amountPaise ?? plan.amount || 0;
+    if (!amountPaise) {
+      return res.status(400).json({ success: false, message: 'Invalid plan price configuration' });
+    }
+
     const options = {
-      currency: plan.currency,
+      amount: amountPaise,
+      currency: plan.currency || 'USD',
       receipt: `receipt_${userId}_${Date.now()}`,
       notes: {
         userId: userId,
         planId: planId,
-        credits: plan.credits.toString()
+        credits: (plan.credits || 0).toString()
       }
     };
 
-    const order = await razorpay.orders.create(options);
+    const rp = getRazorpay();
+    const order = await rp.orders.create(options);
 
     return res.json({ 
       success: true, 
@@ -57,8 +69,8 @@ export const createCheckoutSession = async (req, res) => {
     });
   } catch (error) {
     console.log('Razorpay order creation error:', error);
-
-    return res.status(500).json({ success: false, message: error.message });
+    const message = error?.error?.description || error.message || 'Order creation failed';
+    return res.status(500).json({ success: false, message });
   }
 };
 
@@ -79,7 +91,8 @@ export const verifyPayment = async (req, res) => {
     }
 
     // Get order details to extract user info and credits
-    const order = await razorpay.orders.fetch(razorpay_order_id);
+    const rp = getRazorpay();
+    const order = await rp.orders.fetch(razorpay_order_id);
     const userId = order.notes.userId;
     const credits = parseInt(order.notes.credits);
 
@@ -95,7 +108,8 @@ export const verifyPayment = async (req, res) => {
     });
   } catch (error) {
     console.log('Payment verification error:', error);
-    return res.status(500).json({ success: false, message: error.message });
+    const message = error?.error?.description || error.message || 'Verification failed';
+    return res.status(500).json({ success: false, message });
   }
 };
 

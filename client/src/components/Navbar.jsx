@@ -14,7 +14,10 @@ const Navbar = () => {
   return (
 
     <div className='flex justify-between items-center py-4'>
-        <Link to='/'> <img src={assets.logo} alt="" className='w-28 sm:w-32 lg:w-40' /> </Link> 
+        <Link to='/' className='flex items-center gap-2 sm:gap-3'> 
+          <img src={assets.logo_icon} alt="MindSketch" className='w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 lg:w-10 lg:h-10 flex-shrink-0' /> 
+          <span className='text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold text-gray-800 whitespace-nowrap'>MindSketch</span>
+        </Link> 
       <div>
 
           {user ? 
@@ -38,8 +41,8 @@ const Navbar = () => {
           </div> 
           : 
           <div className='flex items-center gap-2 sm:gap-5'>
-          <p onClick={()=>navigate('/buy')} className='cursor-pointer'>Pricing</p>
-          <button onClick={()=>setShowLogin(true)} className='bg-zinc-800 text-white px-7 py-2 sm:px-10 text-sm rounded-full'>Login</button>    
+          <p onClick={()=>navigate('/buy')} className='cursor-pointer text-sm sm:text-base hover:text-blue-600 transition-colors'>Pricing</p>
+          <button onClick={()=>setShowLogin(true)} className='bg-zinc-800 text-white px-4 py-2 sm:px-7 sm:py-2 md:px-10 text-xs sm:text-sm rounded-full hover:bg-zinc-700 transition-colors'>Login</button>    
           </div>}
 
       </div>    

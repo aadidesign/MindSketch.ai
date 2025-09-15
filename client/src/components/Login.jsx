@@ -55,6 +55,11 @@ const Login = () => {
                 case 'auth/popup-blocked':
                     errorMessage = 'Pop-up blocked. Trying alternative method...';
                     break;
+                case 'auth/unauthorized-domain': {
+                    const host = typeof window !== 'undefined' ? window.location.host : '';
+                    errorMessage = `This domain is not authorized for Google sign-in. Add "${host}" in Firebase Console → Authentication → Settings → Authorized domains.`;
+                    break;
+                }
                 case 'auth/cancelled-popup-request':
                     errorMessage = 'Sign-in request cancelled';
                     break;
